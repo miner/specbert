@@ -35,6 +35,8 @@
 (deftest nested 
   (is (conforms? '[int sym str kw] '(10 foo "foo" :foo)))
   (is (s/valid? (s/cat :i int? :s symbol? :str string? :k keyword?) '(10 foo "foo" :foo)))
+  ;; slighly different, tuple matches only a vector, not list
+  (is (s/valid? (s/tuple int? symbol? string? keyword?) '[10 foo "foo" :foo]))
   (is (not (conforms? '[int sym str kw] '(10 :a foo "foo" :foo))))
   (is (not (s/valid? (s/tuple int? symbol? string? keyword) '(10 :a foo "foo" :foo))))            
   (is (conforms? '[(* kw int)] '(:a 10 :b 20 :c 30)))
