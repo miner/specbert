@@ -11,8 +11,10 @@
 
 (defn conforms?
   ([pat x] (h/conforms? pat x))
-  ([pat spec x] (and (h/conforms? pat x)
-                     (s/valid? spec x))))
+  ([pat spec x] (let [hr (h/conforms? pat x)
+                      sr (s/valid? spec x)]
+                  (assert (= hr sr))
+                  hr)))
 
 (defn is-herbert-eq [herbert-pattern spec]
   (let [samples (gen/sample (hg/generator herbert-pattern))]
@@ -27,16 +29,12 @@
   (is-herbert-eq 'int int?))
 
 (deftest basics
-  (is (conforms? 'int 10))
-  (is (s/valid? int? 10))
-  (is (conforms? 'str "foo"))
-  (is (s/valid? symbol? 'foo))
-  (is (conforms? 'kw :foo))
-  (is (s/valid? keyword? :foo))
-  (is (conforms? 'float 1.23))
-  (is (s/valid? float? 1.23))
-  (is (not (conforms? 'sym :foo)))
-  (is (not (s/valid? symbol? :foo))))
+  (is (conforms? 'int int? 10))
+  (is (conforms? 'str string? "foo"))
+  (is (conforms? 'kw keyword? :foo))
+  (is (conforms? 'float float? 1.23))
+  (is (not (conforms? 'sym symbol? :foo))))
+
 
 (deftest numbers
   (is (conforms? 'even 10))
