@@ -1,10 +1,30 @@
 (ns miner.test-herbert
-  (:require [miner.herbert :refer :all]
+  (:require [miner.herbert :as h]
             [clojure.test :refer :all]
+            [clojure.test.check.generators :as gen]
             miner.herbert.predicates
+            [miner.herbert.generators :as hg]
             [miner.tagged :as tag]
             [clojure.spec.alpha :as s]
             clojure.string))
+
+
+(defn conforms?
+  ([pat x] (h/conforms? pat x))
+  ([pat spec x] (and (h/conforms? pat x)
+                     (s/valid? spec x))))
+
+(defn is-herbert-eq [herbert-pattern spec]
+  (let [samples (gen/sample (hg/generator herbert-pattern))]
+    (doseq [x samples]
+      (is (s/valid? spec x))))
+  (let [samples (gen/sample (s/gen spec))
+        hfn (h/conform herbert-pattern)]
+    (doseq [x samples]
+      (is (hfn x) (str herbert-pattern " on " x)))))
+
+(deftest pretest
+  (is-herbert-eq 'int int?))
 
 (deftest basics
   (is (conforms? 'int 10))
@@ -335,13 +355,13 @@
                   {:palindrome "racecar" :len 7}])))
 
 (deftest recursive
-  (let [r? (conform '(:= a (or :a [:b (+ a)])))]
+  (let [r? (h/conform '(:= a (or :a [:b (+ a)])))]
     (is (r? ':a))
     (is (r? [:b :a]))
     (is (r? [:b [:b :a :a] :a]))))
 
 (deftest recursive-grammar
-  (let [r? (conform '(grammar [a b]
+  (let [r? (h/conform '(grammar [a b]
                          a (or :a [:av a])
                          b (or :b [:bv b])) )]
     (is (r? [:a :b]))
@@ -350,14 +370,14 @@
     (is (r? [[:av [:av :a]] [:bv [:bv :b]]]))))
 
 (deftest recursive-doubly
-  (let [r? (conform '[(:= a (or :a [:av a])) (:= b (or :b [:bv b]))] )]
+  (let [r? (h/conform '[(:= a (or :a [:av a])) (:= b (or :b [:bv b]))] )]
     (is (r? [:a :b]))
     (is (r? [[:av :a] :b]))
     (is (r? [[:av :a] [:bv :b]]))
     (is (r? [[:av [:av :a]] [:bv [:bv :b]]]))))
 
 (deftest recursive-plus
-  (let [r? (conform '[(:= a (or :a [:av a+])) (:= b (or :b [:bv b]))] )]
+  (let [r? (h/conform '[(:= a (or :a [:av a+])) (:= b (or :b [:bv b]))] )]
     (is (r? [:a :b]))
     (is (r? [[:av :a :a] :b]))
     (is (r? [[:av :a [:av :a [:av :a]]] [:bv :b]]))
@@ -452,9 +472,9 @@
                     :occurrence/start-time #inst "1970-01-01T00:00:00.003-00:00"}]])))
 
 (deftest readme-examples
-  (is (= ((conform '[(:= A int) (:= B int) (:= C int+ A B)]) [3 7 4 5 6])
+  (is (= ((h/conform '[(:= A int) (:= B int) (:= C int+ A B)]) [3 7 4 5 6])
          '{C [4 5 6], B 7, A 3}))
-  (is (= ((conform '[(:= MAX int) (:= XS int+ MAX)]) [7 3 5 6 4])
+  (is (= ((h/conform '[(:= MAX int) (:= XS int+ MAX)]) [7 3 5 6 4])
          '{XS [3 5 6 4], MAX 7}))
   (is (conforms? '{:a int :b [sym+] :c str} '{:a 42 :b [foo bar baz] :c "foo"}))
   (is (conforms? '{:a int :b sym :c? [str*]} '{:a 1 :b foo}))
@@ -485,12 +505,12 @@
   (let [s1 '(grammar [iii+] iii (int 3))
         s2 '(grammar [sss+] sss (sym "..."))
         s3 '(grammar [kkk+] kkk (kw ":..."))]
-    (is (= (schema-merge '[iii sss kkk] s1 s2 s3)
+    (is (= (h/schema-merge '[iii sss kkk] s1 s2 s3)
            '(grammar [iii sss kkk]
                     iii (int 3)
                     sss (sym "...")
                     kkk (kw ":..."))))
-    (is (= (schema-merge '(grammar [jjj sss kkk] jjj {:a iii}) s1 s2 s3)
+    (is (= (h/schema-merge '(grammar [jjj sss kkk] jjj {:a iii}) s1 s2 s3)
            '(grammar [jjj sss kkk]
                     iii (int 3)
                     sss (sym "...")
@@ -682,7 +702,7 @@
 (deftest conform-vars
   (let [colliding-strings '("AaAaAa" "AaAaBB" "AaBBAa" "BBAaAa" "BBAaBB" "BBBBAa"
                             "BBBBBB")
-        matching-vars (map schema-conformance-var colliding-strings)]
+        matching-vars (map h/schema-conformance-var colliding-strings)]
     (is (apply = (map hash colliding-strings)))
     (is (= (hash "FB") (hash "Ea"))) ;; another example
     (is (apply distinct? matching-vars))
