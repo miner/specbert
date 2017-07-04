@@ -1,7 +1,7 @@
 (ns miner.test-specbert
   (:require [clojure.test :refer :all]
             [clojure.spec.alpha :as s]
-            [miner.specbert :refer :all]))
+            [miner.specbert :as sp]))
 
 (deftest a-test
   (testing "specbert"
