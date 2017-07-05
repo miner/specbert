@@ -56,9 +56,9 @@
   ;; slighly different, tuple matches only a vector, not list
   (is (s/valid? (s/tuple int? symbol? string? keyword?) '[10 foo "foo" :foo]))
   (is (not (conforms? '[int sym str kw] '(10 :a foo "foo" :foo))))
-  (is (not (s/valid? (s/tuple int? symbol? string? keyword) '(10 :a foo "foo" :foo))))            
+  (is (not (s/valid? (s/tuple int? symbol? string? keyword) (vec '(10 :a foo "foo" :foo))))            )
   (is (conforms? '[(* kw int)] '(:a 10 :b 20 :c 30)))
-  (is (s/valid? (s/coll-of (s/or :k keyword? :i int?) :into []) '(:a 10 :b 20 :c 30)))
+  (is (s/valid? (s/coll-of (s/or :k keyword? :i int?) :into ()) '(:a 10 :b 20 :c 30)))
   (is (conforms? '[(+ kw int sym)] '(:a 10 foo :b 20 bar)))
   (is (s/valid? (s/+ (s/or :k keyword? :i int? :s symbol?)) '(:a 10 foo :b 20 bar))))
 
