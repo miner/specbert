@@ -3,7 +3,8 @@
   :url "https://github.com/miner/specbert"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.9.0-alpha17"]
+  :dependencies [[org.clojure/clojure "1.9.0-beta2"]
+                 [org.clojure/spec.alpha "0.1.134"]
                  [org.clojure/test.check "0.10.0-alpha2"]
                  [com.velisco/herbert "0.7.0"]
                  [criterium "0.4.4"]]
