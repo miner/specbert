@@ -7,12 +7,14 @@
 
 (defn ben [f]
   (dotimes [n 10] (println (time (f (assoc mxx :user/xx n))))))
-  
-(defn namespaced? [x]
+
+;; should be namespaceable?, but probably faster to inline in kspace
+;; also, logically same as #(instance? clojure.lang.Named %)
+#_ (defn namespaced? [x]
   (or (keyword? x) (symbol? x)))
 
 (defn kspace [x]
-  (when (namespaced? x)
+  (when (instance? clojure.lang.Named x)
     (namespace x)))
 
 
