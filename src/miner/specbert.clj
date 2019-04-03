@@ -1,4 +1,7 @@
-(ns miner.specbert)
+(ns miner.specbert
+  (:require [clojure.spec-alpha2 :as s]
+            [clojure.spec-alpha2.gen :as gen]
+            [clojure.spec-alpha2.test :as test]))
 
 
 ;; Wait a second, we need a better microbenchmark!!!
@@ -275,4 +278,15 @@
 
 
 
+
+
+(defn bar [kw i]
+  {:pre [(int? i) (keyword? kw)]
+   :post [(symbol? %)]}
+  (symbol (namespace kw) (str (name kw) i)))
+
+
+(s/fdef bar
+    :args (s/cat :kw keyword? :n pos-int?)
+    :ret symbol?)
 
