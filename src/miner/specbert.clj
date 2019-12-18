@@ -1,7 +1,7 @@
 (ns miner.specbert
-  (:require [clojure.spec-alpha2 :as s]
-            [clojure.spec-alpha2.gen :as gen]
-            [clojure.spec-alpha2.test :as test]))
+  (:require [clojure.alpha.spec :as s]
+            [clojure.alpha.spec.gen :as gen]
+            [clojure.alpha.spec.test :as test]))
 
 
 ;; Wait a second, we need a better microbenchmark!!!
